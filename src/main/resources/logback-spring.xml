@@ -26,7 +26,22 @@
         </encoder>
     </appender>
 
-    <springProfile name="hosted">
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <springProfile name="test">
+        <logger level="DEBUG" name="com.pickdate">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
         <logger level="INFO" name="com.pickdate">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>

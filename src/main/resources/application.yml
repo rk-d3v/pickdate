@@ -2,9 +2,9 @@ spring:
   application:
     name: pickdate
 
-  session:
-    jdbc:
-      initialize-schema: never
+  docker:
+    compose:
+      lifecycle-management: start_and_stop
 
   modulith:
     runtime:
@@ -33,6 +33,26 @@ spring:
     baseline-on-migrate: true
     validate-on-migrate: true
 
+logback:
+  log:
+    dir: /app/logs
+
 server:
   servlet:
     context-path: ${PICKDATE_CONTEXT_PATH:/pickdate}
+
+springdoc:
+  show-actuator: false
+
+management:
+  info:
+    git:
+      mode: full
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: info,health,metrics,loggers
