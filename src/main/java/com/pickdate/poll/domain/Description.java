@@ -1,0 +1,29 @@
+package com.pickdate.poll.domain;
+
+import com.pickdate.bootstrap.domain.Value;
+import com.pickdate.bootstrap.validation.Assert;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+
+public record Description(String value) implements Value<String> {
+
+    public Description(String value) {
+        this.value = value == null ? null : value.strip();
+        validate(this.value);
+    }
+
+    public static Description of(String value) {
+        return new Description(value);
+    }
+
+    private static void validate(@Nullable String value) {
+        Assert.that("description", value)
+                .isNotBlank("description must not be null or blank");
+    }
+
+    @Override
+    public @Nonnull String toString() {
+        return value == null ? "null" : value;
+    }
+}
