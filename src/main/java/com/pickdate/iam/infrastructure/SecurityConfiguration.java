@@ -104,7 +104,8 @@ class SecurityConfiguration {
                         .requestMatchers("/login").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/actuator/health/**"
                         ).permitAll()
                         .requestMatchers("/reset-password").permitAll()
                         .requestMatchers("/api/v1/iam/setup/**").access((authentication, _) -> {
