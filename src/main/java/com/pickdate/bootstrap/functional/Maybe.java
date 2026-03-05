@@ -7,14 +7,14 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 
-public interface Option<T> extends Value<T> {
+public interface Maybe<T> extends Value<T> {
 
-    static <T> Option<T> from(T value) {
+    static <T> Maybe<T> from(T value) {
         if (value == null) return none();
         return new Some<>(value);
     }
 
-    static <T> Option<T> none() {
+    static <T> Maybe<T> none() {
         return None.instance();
     }
 
@@ -33,22 +33,26 @@ public interface Option<T> extends Value<T> {
     }
 
     default <A> A ifPresentOrElse(Function<T, A> function, Supplier<A> emptyAction) {
-        return isPresent() ? function.apply(value()) : emptyAction.get();
+        return isPresent() ? function.apply(getValue()) : emptyAction.get();
     }
 
     default T orGet(T other) {
-        return isPresent() ? value() : other;
+        return isPresent() ? getValue() : other;
+    }
+
+    default T orNull() {
+        return isPresent() ? getValue() : null;
     }
 
     default Stream<T> stream() {
         if (isEmpty()) {
             return Stream.empty();
         } else {
-            return Stream.of(value());
+            return Stream.of(getValue());
         }
     }
 
-    record Some<T>(T value) implements Option<T> {
+    record Some<T>(T value) implements Maybe<T> {
 
         @Override
         public T get() {
@@ -56,12 +60,12 @@ public interface Option<T> extends Value<T> {
         }
 
         @Override
-        public T value() {
+        public T getValue() {
             return get();
         }
     }
 
-    record None<T>() implements Option<T> {
+    record None<T>() implements Maybe<T> {
 
         private static final None<Object> INSTANCE = new None<>();
 
@@ -76,7 +80,7 @@ public interface Option<T> extends Value<T> {
         }
 
         @Override
-        public T value() {
+        public T getValue() {
             return null;
         }
     }

@@ -1,16 +1,23 @@
-package com.pickdate.iam.domain;
+package com.pickdate.iam.application;
 
+import com.pickdate.bootstrap.domain.Email;
 import com.pickdate.bootstrap.domain.Identifier;
 import com.pickdate.bootstrap.domain.Property;
 import com.pickdate.bootstrap.exception.ResourceAlreadyExistException;
+import com.pickdate.iam.domain.Authority;
+import com.pickdate.iam.domain.User;
+import com.pickdate.iam.domain.UserNotFoundException;
+import com.pickdate.iam.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+@Service
 @RequiredArgsConstructor
-public class UserService implements UserUseCase {
+class UserService implements UserUseCase {
 
     private final UserRepository userRepository;
 
@@ -43,7 +50,7 @@ public class UserService implements UserUseCase {
     private void assertEmailNotTaken(Email email) {
         if (userRepository.existsByEmail(email))
             throw new ResourceAlreadyExistException(
-                    Property.of("email", email.value()), "User with email %s already exists".formatted(email)
+                    Property.of("email", email), "User with email %s already exists".formatted(email)
             );
     }
 

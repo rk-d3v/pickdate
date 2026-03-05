@@ -1,7 +1,8 @@
-package com.pickdate.test.stub
+package com.pickdate.iam.application
 
-import com.pickdate.iam.domain.ApplicationSetupService
-import com.pickdate.iam.domain.ApplicationSetupUseCase
+
+import com.pickdate.test.stub.ApplicationSetupRepositoryFake
+import com.pickdate.test.stub.UserRepositoryFake
 
 
 class ApplicationSetupUseCaseTestConfig {

@@ -1,3 +1,6 @@
+DROP TABLE IF EXISTS event_publication_archive CASCADE;
+DROP TABLE IF EXISTS event_publication CASCADE;
+
 CREATE TABLE IF NOT EXISTS event_publication
 (
     id                     UUID                     NOT NULL,

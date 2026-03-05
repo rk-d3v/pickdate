@@ -1,6 +1,6 @@
-package com.pickdate.iam.infrastructure;
+package com.pickdate.bootstrap.infrastructure.converter;
 
-import com.pickdate.iam.domain.Email;
+import com.pickdate.bootstrap.domain.Email;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import lombok.RequiredArgsConstructor;
@@ -14,11 +14,13 @@ class EmailConverter implements AttributeConverter<Email, String> {
 
     @Override
     public String convertToDatabaseColumn(Email email) {
-        return email == null ? null : email.value();
+        return email == null ? null : email.getValue();
     }
 
     @Override
     public Email convertToEntityAttribute(String dbData) {
-        return dbData == null ? null : Email.of(dbData);
+        return dbData == null
+                ? Email.EMPTY
+                : Email.of(dbData);
     }
 }

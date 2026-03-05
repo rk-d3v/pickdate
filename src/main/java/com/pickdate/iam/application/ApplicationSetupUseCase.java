@@ -1,5 +1,8 @@
-package com.pickdate.iam.domain;
+package com.pickdate.iam.application;
 
+
+import com.pickdate.iam.domain.DomainUrl;
+import com.pickdate.iam.domain.User;
 
 public interface ApplicationSetupUseCase {
 

@@ -1,16 +1,20 @@
-package com.pickdate.iam.domain;
+package com.pickdate.iam.application;
 
+import com.pickdate.bootstrap.domain.Email;
 import com.pickdate.bootstrap.domain.Property;
 import com.pickdate.bootstrap.exception.ResourceAlreadyExistException;
+import com.pickdate.iam.domain.*;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.pickdate.iam.domain.Authority.ADMIN;
 
 
+@Service
 @RequiredArgsConstructor
-public class ApplicationSetupService implements ApplicationSetupUseCase {
+class ApplicationSetupService implements ApplicationSetupUseCase {
 
     private final ApplicationSetupRepository applicationSetupRepository;
     private final UserRepository userRepository;
@@ -66,7 +70,7 @@ public class ApplicationSetupService implements ApplicationSetupUseCase {
     private void assertEmailNotTaken(Email email) {
         if (userRepository.existsByEmail(email))
             throw new ResourceAlreadyExistException(
-                    Property.of("email", email.value()), "User with email %s already exists".formatted(email)
+                    Property.of("email", email), "User with email %s already exists".formatted(email)
             );
     }
 }

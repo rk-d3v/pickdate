@@ -1,13 +1,18 @@
-CREATE EXTENSION IF NOT EXISTS citext;
+DROP TABLE IF EXISTS user_authorities CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS authorities CASCADE;
+DROP TABLE IF EXISTS config CASCADE;
 
 CREATE TABLE IF NOT EXISTS users
 (
     id         VARCHAR(255) NOT NULL,
-    email      CITEXT       NOT NULL,
+    email      VARCHAR(255) NOT NULL,
     password   VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ,
     updated_at TIMESTAMPTZ,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    CONSTRAINT email_unique UNIQUE (email),
+    CONSTRAINT users_email_lowercase CHECK (email = lower(email))
 );
 
 CREATE TABLE IF NOT EXISTS authorities
@@ -25,18 +30,12 @@ CREATE TABLE IF NOT EXISTS user_authorities
     PRIMARY KEY (user_id, authority)
 );
 
-CREATE TABLE IF NOT EXISTS keys
-(
-    id      varchar(255) PRIMARY KEY,
-    salt    varchar(255),
-    version int
-);
-
 CREATE TABLE IF NOT EXISTS config
 (
     id           varchar(255) PRIMARY KEY,
     domain_url   varchar(255),
-    key          varchar(255) REFERENCES keys (id),
     setup_status varchar(255)
 );
 
+
+CREATE INDEX IF NOT EXISTS idx_user_authorities_authority ON user_authorities (authority);

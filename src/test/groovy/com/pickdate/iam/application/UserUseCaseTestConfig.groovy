@@ -1,8 +1,8 @@
-package com.pickdate.test.stub
+package com.pickdate.iam.application
 
-import com.pickdate.iam.domain.UserService
-import com.pickdate.iam.domain.UserUseCase
+
 import com.pickdate.test.fixture.UserFixture
+import com.pickdate.test.stub.UserRepositoryFake
 
 
 class UserUseCaseTestConfig {
