@@ -14,4 +14,6 @@ public interface UserUseCase {
     Page<User> getAllUsers(Pageable pageable);
 
     User createUser(User user);
+
+    void deleteUser(String id);
 }

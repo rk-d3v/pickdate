@@ -103,4 +103,17 @@ class PollApiIntegrationSpec extends Specification implements PollApiTrait {
             it.name() == req.toDisplayName().value
         }
     }
+
+    def "should remove option"() {
+        given:
+        setupTestData()
+        def optionId = pollUseCase.getPoll(Identifier.of(pollId)).options().first().optionId()
+
+        when:
+        def response = controller.removeOption(pollId, optionId)
+
+        then:
+        response.statusCode.value() == 200
+        !response.body.options().any { it.optionId() == optionId }
+    }
 }

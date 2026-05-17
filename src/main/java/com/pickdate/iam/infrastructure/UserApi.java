@@ -88,4 +88,12 @@ class UserApi {
         var created = userUseCase.createUser(user);
         return new ResponseEntity<>(UserData.from(created), HttpStatus.CREATED);
     }
+
+    @DeleteMapping("/{id}")
+    @ApiResponses(value = @ApiResponse(responseCode = "204", description = "User deleted"))
+    @Operation(summary = "Delete user", description = "Deletes a user by id")
+    ResponseEntity<Void> delete(@PathVariable String id) {
+        userUseCase.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,6 +30,18 @@ import static com.pickdate.shared.exception.ProblemFactory.*;
 class ExceptionAdvice {
 
     private ApplicationEventPublisher applicationEvents;
+
+    @ExceptionHandler({
+            ErrorResponseException.class,
+            org.springframework.web.servlet.resource.NoResourceFoundException.class,
+            org.springframework.web.reactive.resource.NoResourceFoundException.class
+    })
+    ResponseEntity<Problem> handleException(ErrorResponse errorResponse, HttpServletRequest request) {
+        log.error("Error response");
+        URI uri = getUri(request);
+        Problem problem = ProblemFactory.resolveException(errorResponse, uri);
+        return new ResponseEntity<>(problem, errorResponse.getStatusCode());
+    }
 
     @ApiResponse(responseCode = "404", description = "Not found")
     @ExceptionHandler(EntityNotFoundException.class)

@@ -2,17 +2,20 @@ package com.pickdate.iam.infrastructure
 
 import com.pickdate.iam.application.UserUseCaseTestConfig
 import org.springframework.data.domain.Pageable
+import spock.lang.Execution
 import spock.lang.Specification
 
 import static com.pickdate.test.fixture.UserFixture.SOME_ADMIN
+import static org.spockframework.runtime.model.parallel.ExecutionMode.SAME_THREAD
 
 
+@Execution(SAME_THREAD)
 class UserApiIntegrationSpec extends Specification {
 
     def userUseCase = UserUseCaseTestConfig.userUseCase()
     def userApi = new UserApi(userUseCase)
 
-    def setupSpec() {
+    def setup() {
         UserUseCaseTestConfig.setupTestData()
     }
 
@@ -54,5 +57,17 @@ class UserApiIntegrationSpec extends Specification {
         responseEntity.body.authorities() == ["USER"]
         // id is not null
         responseEntity.body.id()
+    }
+
+    def "should delete user"() {
+        given:
+        def id = SOME_ADMIN.id.value
+
+        when:
+        def responseEntity = userApi.delete(id)
+
+        then:
+        responseEntity.statusCode.value() == 204
+        responseEntity.body == null
     }
 }

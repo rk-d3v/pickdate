@@ -1,5 +1,8 @@
 package com.pickdate.shared.exception;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.ErrorResponse;
+
 import java.net.URI;
 import java.util.List;
 
@@ -94,6 +97,14 @@ public final class ProblemFactory {
         return ProblemDetails.builder()
                 .title("Internal Server Error")
                 .status(INTERNAL_SERVER_ERROR.value())
+                .instance(uri.toString())
+                .build();
+    }
+
+    public static Problem resolveException(ErrorResponse errorResponse, URI uri) {
+        return ProblemDetails.builder()
+                .title(((HttpStatus) (errorResponse.getStatusCode())).getReasonPhrase())
+                .status(errorResponse.getStatusCode().value())
                 .instance(uri.toString())
                 .build();
     }

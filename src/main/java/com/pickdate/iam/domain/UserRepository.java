@@ -22,4 +22,6 @@ public interface UserRepository {
     User save(User user);
 
     Optional<User> findById(Identifier id);
+
+    void deleteById(Identifier identifier);
 }

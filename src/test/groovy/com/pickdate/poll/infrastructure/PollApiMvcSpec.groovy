@@ -19,8 +19,7 @@ import spock.util.mop.Use
 import static com.pickdate.test.fixture.PollFixture.*
 import static org.spockframework.runtime.model.parallel.ExecutionMode.SAME_THREAD
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 
 @Use(JsonMapper)
@@ -124,6 +123,55 @@ class PollApiMvcSpec extends MvcSpec {
         body.title == "Internal Server Error"
         body.status == 500
         body.detail == "ups... app stopped working"
+        body.instance.contains("/api/v1/polls")
+        !body.traceId.isBlank()
+    }
+
+    @WithMockUser(authorities = "ROLE_USER")
+    def "should remove option from poll"() {
+        given:
+        def pollId = ID
+        def optionId = ID
+        def pollData = somePollData()
+
+        when:
+        def response = mvc.perform(delete("/api/v1/polls/${pollId}/options/${optionId}")
+                .with(csrf()))
+                .andDo(print())
+                .andReturn()
+                .getResponse()
+
+        then:
+        1 * pollUseCase.removeOption(_, _) >> pollData
+
+        and:
+        response.status == 200
+    }
+
+    @WithMockUser(authorities = "ROLE_USER")
+    def "should return 404 when removing option from non-existent poll"() {
+        given:
+        def pollId = ID
+        def optionId = ID
+
+        when:
+        def response = mvc.perform(delete("/api/v1/polls/${pollId}/options/${optionId}")
+                .with(csrf()))
+                .andDo(print())
+                .andReturn()
+                .getResponse()
+
+        then:
+        1 * pollUseCase.removeOption(_, _) >> { throw new NotFoundException(new Property<>("id", pollId), "Poll not found") }
+
+        and:
+        response.status == 404
+
+        and:
+        def body = response.toMap()
+        body.title == "Resource Not Found"
+        body.status == 404
+        body.detail == "Poll not found"
         body.instance.contains("/api/v1/polls")
         !body.traceId.isBlank()
     }

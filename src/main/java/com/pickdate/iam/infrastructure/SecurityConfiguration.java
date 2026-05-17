@@ -141,7 +141,10 @@ class SecurityConfiguration {
                                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED))
                 )
                 .formLogin(form -> form
-                        .loginPage("/login").permitAll()
+                        .loginPage("/login")
+                        .usernameParameter("email")
+                        .passwordParameter("password")
+                        .permitAll()
                         .authenticationDetailsSource(new RequestDetailsSource())
                         .failureHandler((request, response, exception) -> {
                             var defaultFailureHandler = new SimpleUrlAuthenticationFailureHandler("/login?error");

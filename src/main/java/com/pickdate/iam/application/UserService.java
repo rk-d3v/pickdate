@@ -47,6 +47,12 @@ class UserService implements UserUseCase {
         return userRepository.save(user);
     }
 
+    @Override
+    @Transactional
+    public void deleteUser(String id) {
+        userRepository.deleteById(Identifier.of(id));
+    }
+
     private void assertEmailNotTaken(Email email) {
         if (userRepository.existsByEmail(email))
             throw new ResourceAlreadyExistException(

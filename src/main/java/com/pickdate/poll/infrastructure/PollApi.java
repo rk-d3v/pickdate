@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 
 @RestController
@@ -46,7 +47,6 @@ class PollApi {
     }
 
     @PostMapping("/{pollId}/options")
-    @ResponseStatus(CREATED)
     @Operation(summary = "Add option to poll", description = "Adds an option (time range or whole-day) to an existing poll")
     ResponseEntity<PollData> addOption(
             @PathVariable String pollId,
@@ -54,6 +54,16 @@ class PollApi {
     ) {
         var data = pollUseCase.addOption(Identifier.of(pollId), request.toRange(), request.isWholeDay());
         return ResponseEntity.status(CREATED).body(data);
+    }
+
+    @DeleteMapping("/{pollId}/options/{optionId}")
+    @Operation(summary = "Remove option from poll", description = "Removes an option from an existing poll")
+    ResponseEntity<PollData> removeOption(
+            @PathVariable String pollId,
+            @PathVariable String optionId
+    ) {
+        var data = pollUseCase.removeOption(Identifier.of(pollId), Identifier.of(optionId));
+        return ResponseEntity.status(OK).body(data);
     }
 
     @PostMapping("/{pollId}/participants")
