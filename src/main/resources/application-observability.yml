@@ -1,0 +1,10 @@
+# observability config
+pickdate:
+  observability:
+    problem:
+      enabled: true
+      logged-statuses: [ 409, 500 ]
+    audit:
+      enabled: true
+      extractIp: true
+      extractUserAgent: true

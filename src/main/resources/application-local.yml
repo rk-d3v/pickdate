@@ -1,6 +1,4 @@
 spring:
-  application:
-    name: pickdate
 
   jpa:
     generate-ddl: false
@@ -23,3 +21,12 @@ spring:
     enabled: true
     baseline-on-migrate: true
     validate-on-migrate: true
+
+# override observability config
+pickdate:
+  observability:
+    problem:
+      enabled: true
+      logged-statuses: [ 400, 401, 403, 404, 409, 500, 503 ]
+    audit:
+      enabled: true

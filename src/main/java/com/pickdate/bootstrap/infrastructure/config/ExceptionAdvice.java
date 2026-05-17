@@ -4,11 +4,8 @@ import com.pickdate.shared.exception.*;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.ErrorResponse;
@@ -19,17 +16,17 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.net.URI;
+import java.util.Optional;
 
 import static com.pickdate.shared.exception.ProblemFactory.*;
 
 
 @Slf4j
 @RestControllerAdvice
-@NoArgsConstructor
-@AllArgsConstructor(onConstructor_ = @Autowired)
+@RequiredArgsConstructor
 class ExceptionAdvice {
 
-    private ApplicationEventPublisher applicationEvents;
+    private final Optional<ProblemEventPublisher> problemEventPublisher;
 
     @ExceptionHandler({
             ErrorResponseException.class,
@@ -40,6 +37,7 @@ class ExceptionAdvice {
         log.error("Error response");
         URI uri = getUri(request);
         Problem problem = ProblemFactory.resolveException(errorResponse, uri);
+        publish(new ProblemCapturedEvent(problem, errorResponse.getDetailMessageCode()));
         return new ResponseEntity<>(problem, errorResponse.getStatusCode());
     }
 
@@ -49,7 +47,7 @@ class ExceptionAdvice {
         log.info("Resource not found", ex);
         URI uri = getUri(request);
         Problem problem = notFound(ex, uri);
-        applicationEvents.publishEvent(new ProblemCapturedEvent(problem, ex.getMessage()));
+        publish(new ProblemCapturedEvent(problem, ex.getMessage()));
         return new ResponseEntity<>(problem, HttpStatusCode.valueOf(problem.getStatus()));
     }
 
@@ -59,7 +57,7 @@ class ExceptionAdvice {
         log.info("Resource not found", ex);
         URI uri = getUri(request);
         Problem problem = notFound(ex, uri);
-        applicationEvents.publishEvent(new ProblemCapturedEvent(problem, ex.getMessage()));
+        publish(new ProblemCapturedEvent(problem, ex.getMessage()));
         return new ResponseEntity<>(problem, HttpStatusCode.valueOf(problem.getStatus()));
     }
 
@@ -69,7 +67,7 @@ class ExceptionAdvice {
         log.warn("Validation exception", ex);
         URI uri = getUri(request);
         Problem problem = badRequest(ex, uri);
-        applicationEvents.publishEvent(new ProblemCapturedEvent(problem, ex.getMessage()));
+        publish(new ProblemCapturedEvent(problem, ex.getMessage()));
         return ResponseEntity.status(HttpStatusCode.valueOf(problem.getStatus())).body(problem);
     }
 
@@ -79,7 +77,7 @@ class ExceptionAdvice {
         log.warn("Validation exception", ex);
         URI uri = getUri(request);
         Problem problem = badRequest(ex, uri);
-        applicationEvents.publishEvent(new ProblemCapturedEvent(problem, ex.getMessage()));
+        publish(new ProblemCapturedEvent(problem, ex.getMessage()));
         return ResponseEntity.status(HttpStatusCode.valueOf(problem.getStatus())).body(problem);
     }
 
@@ -89,7 +87,7 @@ class ExceptionAdvice {
         log.warn("Resource already exists", ex);
         URI uri = getUri(request);
         Problem problem = conflict(ex, uri);
-        applicationEvents.publishEvent(new ProblemCapturedEvent(problem, ex.getMessage()));
+        publish(new ProblemCapturedEvent(problem, ex.getMessage()));
         return ResponseEntity.status(HttpStatusCode.valueOf(problem.getStatus())).body(problem);
     }
 
@@ -99,7 +97,7 @@ class ExceptionAdvice {
         log.error("Internal server error", ex);
         URI uri = getUri(request);
         Problem problem = internalServerError(ex, uri);
-        applicationEvents.publishEvent(new ProblemCapturedEvent(problem, ex.getMessage()));
+        publish(new ProblemCapturedEvent(problem, ex.getMessage()));
         return new ResponseEntity<>(problem, HttpStatusCode.valueOf(problem.getStatus()));
     }
 
@@ -109,8 +107,12 @@ class ExceptionAdvice {
         log.error("Internal server error", ex);
         URI uri = getUri(request);
         Problem problem = internalServerError(uri);
-        applicationEvents.publishEvent(new ProblemCapturedEvent(problem, ex.getMessage()));
+        publish(new ProblemCapturedEvent(problem, ex.getMessage()));
         return new ResponseEntity<>(problem, HttpStatusCode.valueOf(problem.getStatus()));
+    }
+
+    private void publish(ProblemCapturedEvent event) {
+        problemEventPublisher.ifPresent(publisher -> publisher.publish(event));
     }
 
     private URI getUri(HttpServletRequest request) {
