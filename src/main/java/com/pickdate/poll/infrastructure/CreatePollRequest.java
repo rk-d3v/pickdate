@@ -14,12 +14,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 class CreatePollRequest {
 
-    // TODO: add validation messages
     @Size.List({
-            @Size(min = 3, message = "{validation.name.size.too_short}"),
-            @Size(max = 255, message = "{validation.name.size.too_long}")
+            @Size(min = 3, message = "{validation.title.size.too_short}"),
+            @Size(max = 255, message = "{validation.title.size.too_long}")
     })
-    @NotBlank
+    @NotBlank(message = "{validation.title.not_blank}")
     private String title;
 
     private String description;
