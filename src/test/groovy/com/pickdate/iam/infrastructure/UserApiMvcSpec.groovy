@@ -18,8 +18,7 @@ import spock.lang.Requires
 import static com.pickdate.test.fixture.UserFixture.SOME_ADMIN
 import static com.pickdate.test.fixture.UserFixture.SOME_USER
 import static org.springframework.http.MediaType.APPLICATION_JSON
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 
 @Requires({ it.env['INCLUDE_SLOW_TESTS'] == 'true' })
@@ -145,6 +144,55 @@ class UserApiMvcSpec extends MvcSpec implements JsonMapper {
 
         then:
         1 * userUseCase.getUserById(id.value) >> { throw UserNotFoundException.withId(id.value) }
+
+        and:
+        response.status == 404
+
+        and:
+        def body = toMap(response)
+        body.title == "Resource Not Found"
+        body.status == 404
+        body.detail == "User not found"
+        body.instance.contains("/api/v1/iam/users")
+        !body.traceId.isBlank()
+
+        and:
+        with(body.invalidParams[0] as Map<String, String>) {
+            name == "id"
+            value == id.value
+            reason == "User not found"
+        }
+    }
+
+    def "should delete user"() {
+        given:
+        def id = Identifier.generate()
+
+        when:
+        def response = mvc.perform(delete("/api/v1/iam/users/${id.value}"))
+                .andDo(print())
+                .andReturn()
+                .getResponse()
+
+        then:
+        1 * userUseCase.deleteUser(id.value)
+
+        and:
+        response.status == 204
+    }
+
+    def "should return 404, when deleting non-existent user"() {
+        given:
+        def id = Identifier.generate()
+
+        when:
+        def response = mvc.perform(delete("/api/v1/iam/users/${id.value}"))
+                .andDo(print())
+                .andReturn()
+                .getResponse()
+
+        then:
+        1 * userUseCase.deleteUser(id.value) >> { throw UserNotFoundException.withId(id.value) }
 
         and:
         response.status == 404

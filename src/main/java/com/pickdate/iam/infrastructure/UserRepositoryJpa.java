@@ -17,19 +17,23 @@ import java.util.Optional;
 interface UserRepositoryJpa extends UserRepository, JpaRepository<User, Identifier> {
 
     @Override
-    boolean existsByEmail(Email email);
+    boolean existsByEmail(@NonNull Email email);
 
     @Override
-    Optional<User> findByEmail(Email email);
+    Optional<User> findByEmail(@NonNull Email email);
 
     @Override
     @NonNull
-    Optional<User> findById(Identifier id);
+    Optional<User> findById(@NonNull Identifier id);
 
     @Override
     @NonNull
     Page<User> findAll(@NonNull Pageable pageable);
 
     @Override
-    User save(User user);
+    @NonNull
+    User save(@NonNull User user);
+
+    @Override
+    void deleteById(@NonNull Identifier identifier);
 }

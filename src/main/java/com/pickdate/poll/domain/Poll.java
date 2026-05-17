@@ -81,6 +81,10 @@ public class Poll {
         options.add(option);
     }
 
+    public void removeOption(Identifier optionId) {
+        options.removeIf(option -> option.getId().equals(optionId));
+    }
+
     public void addParticipant(Participant participant) {
         participants.add(participant);
     }

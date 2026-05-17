@@ -17,4 +17,6 @@ public interface PollUseCase {
     PollData registerParticipant(Identifier pollId, Participant participant);
 
     PollData addLocation(Identifier pollId, LocationDetails location);
+
+    PollData removeOption(Identifier pollId, Identifier optionId);
 }

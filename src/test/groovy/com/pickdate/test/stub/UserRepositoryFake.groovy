@@ -45,4 +45,9 @@ class UserRepositoryFake implements UserRepository {
     Optional<User> findById(Identifier id) {
         Optional.ofNullable(map[id])
     }
+
+    @Override
+    void deleteById(Identifier id) {
+        map.remove(id)
+    }
 }

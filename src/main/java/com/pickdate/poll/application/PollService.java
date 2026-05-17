@@ -53,6 +53,15 @@ public class PollService implements PollUseCase {
     }
 
     @Override
+    @CacheEvict(key = "#pollId.value()")
+    public PollData removeOption(Identifier pollId, Identifier optionId) {
+        var poll = findPoll(pollId);
+        poll.removeOption(optionId);
+        repository.save(poll);
+        return PollMapper.toPollData(poll);
+    }
+
+    @Override
     @Cacheable(key = "#id.value()")
     @Transactional(readOnly = true)
     public PollData getPoll(Identifier id) {
