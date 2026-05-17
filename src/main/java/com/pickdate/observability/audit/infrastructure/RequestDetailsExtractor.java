@@ -4,9 +4,9 @@ import com.pickdate.shared.web.RequestDetails;
 import org.springframework.security.core.Authentication;
 
 
-final class IpExtractor {
+final class RequestDetailsExtractor {
 
-    private IpExtractor() {
+    private RequestDetailsExtractor() {
     }
 
     static String extractIp(Authentication authentication) {

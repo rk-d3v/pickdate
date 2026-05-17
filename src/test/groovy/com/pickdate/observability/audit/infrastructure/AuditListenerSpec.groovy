@@ -11,7 +11,9 @@ import spock.lang.Specification
 class AuditListenerSpec extends Specification {
 
     def auditEventUseCase = Mock(AuditEventUseCase)
-    def auditListener = new AuditListener(auditEventUseCase)
+    def auditConfig = new AuditConfig(
+            enabled: true, extractIp: true, extractUserAgent: true)
+    def auditListener = new AuditListener(auditEventUseCase, auditConfig)
 
     def "should save login success event with request details"() {
         given:
