@@ -1,6 +1,10 @@
 package com.pickdate.iam.infrastructure;
 
 import com.pickdate.iam.application.ApplicationSetupUseCase;
+import com.pickdate.iam.domain.Password;
+import com.pickdate.iam.domain.User;
+import com.pickdate.shared.domain.DisplayName;
+import com.pickdate.shared.domain.Email;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -11,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static java.util.Objects.nonNull;
+
 
 @RestController
 @RequestMapping("/api/v1/iam/setup")
@@ -18,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Setup", description = "Bootstrap endpoints for initial application configuration. Available only until setup is completed.")
 class SetupApi {
 
+    public static final String ADMIN = "Admin";
     private final ApplicationSetupUseCase applicationSetupUseCase;
 
     @PostMapping("/domain")
@@ -30,7 +37,14 @@ class SetupApi {
     @PostMapping("/admin")
     @Operation(summary = "Create initial admin user")
     ResponseEntity<Void> initializeAdminUser(@RequestBody CreateUserRequest request) {
-        applicationSetupUseCase.setupAdmin(request.toUser());
+        var user = new User(
+                Email.of(request.email()),
+                Password.fromPlaintext(request.password()),
+                nonNull(request.displayName())
+                        ? DisplayName.of(request.displayName())
+                        : DisplayName.of(ADMIN)
+        );
+        applicationSetupUseCase.setupAdmin(user);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>Logowanie — Pickdate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-100 to-blue-50 flex items-center justify-center p-4">
+
+<div x-data="loginForm()" class="w-full max-w-md">
+
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+
+        <!-- Header bar -->
+        <div class="h-1.5 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600"></div>
+
+        <div class="px-8 py-10">
+
+            <!-- Brand -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl mb-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-800">Pickdate</h1>
+                <p class="text-slate-500 text-sm mt-1">Zaloguj się do swojego konta</p>
+            </div>
+
+            <!-- Error alert -->
+            <div th:if="${loginError}"
+                 x-data="{ visible: true }"
+                 x-show="visible"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-1"
+                 class="mb-6 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clip-rule="evenodd"/>
+                </svg>
+                <p class="text-sm font-medium flex-1">Nieprawidłowy adres email lub hasło.</p>
+                <button type="button" @click="visible = false"
+                        class="text-red-400 hover:text-red-600 transition-colors flex-shrink-0">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Login form -->
+            <form
+                    th:action="@{/login}"
+                    method="post"
+                    hx-boost="false"
+                    @submit="submitting = true"
+                    novalidate>
+
+                <!-- Email -->
+                <div class="mb-5">
+                    <label for="email" class="block text-sm font-medium text-slate-700 mb-1.5">
+                        Adres email
+                    </label>
+                    <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            required
+                            autocomplete="email"
+                            autofocus
+                            placeholder="twoj@email.com"
+                            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400
+                                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                   transition-shadow duration-150"
+                            th:classappend="${loginError} ? 'border-red-300' : ''"
+                    />
+                </div>
+
+                <!-- Password -->
+                <div class="mb-5">
+                    <label for="password" class="block text-sm font-medium text-slate-700 mb-1.5">
+                        Hasło
+                    </label>
+                    <div class="relative">
+                        <input
+                                :type="showPassword ? 'text' : 'password'"
+                                id="password"
+                                name="password"
+                                required
+                                autocomplete="current-password"
+                                placeholder="••••••••"
+                                class="w-full px-4 py-2.5 pr-11 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400
+                                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                       transition-shadow duration-150"
+                                th:classappend="${loginError} ? 'border-red-300' : ''"
+                        />
+                        <button
+                                type="button"
+                                @click="showPassword = !showPassword"
+                                :aria-label="showPassword ? 'Ukryj hasło' : 'Pokaż hasło'"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600
+                                       focus:outline-none focus:text-slate-600 transition-colors">
+                            <!-- Eye icon -->
+                            <svg x-show="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            <!-- Eye-off icon -->
+                            <svg x-show="showPassword" class="w-5 h-5" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember me + Forgot password -->
+                <div class="flex items-center justify-between mb-6">
+                    <label class="flex items-center gap-2 cursor-pointer select-none group">
+                        <input type="checkbox" name="remember-me"
+                               class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                        <span class="text-sm text-slate-600 group-hover:text-slate-800 transition-colors">
+                            Zapamiętaj mnie
+                        </span>
+                    </label>
+                    <a href="/reset-password"
+                       class="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                        Zapomniałem hasła
+                    </a>
+                </div>
+
+                <!-- Submit -->
+                <button
+                        type="submit"
+                        :disabled="submitting"
+                        class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800
+                               disabled:bg-blue-400 disabled:cursor-not-allowed
+                               text-white font-semibold rounded-xl transition-colors duration-150
+                               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                               flex items-center justify-center gap-2">
+                    <svg x-show="submitting" x-cloak
+                         class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <span x-text="submitting ? 'Logowanie...' : 'Zaloguj się'">Zaloguj się</span>
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-6">
+        &copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Pickdate
+    </p>
+</div>
+
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+
+<script>
+    function loginForm() {
+        return {
+            showPassword: false,
+            submitting: false,
+        };
+    }
+
+    document.addEventListener('htmx:configRequest', (event) => {
+        const token = document.querySelector('meta[name="_csrf"]')?.content;
+        const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+        if (token && header) {
+            event.detail.headers[header] = token;
+        }
+    });
+</script>
+
+</body>
+</html>

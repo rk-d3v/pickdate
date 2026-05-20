@@ -4,6 +4,7 @@ import com.pickdate.iam.application.UserUseCase;
 import com.pickdate.iam.domain.Password;
 import com.pickdate.iam.domain.User;
 import com.pickdate.iam.domain.UserData;
+import com.pickdate.shared.domain.DisplayName;
 import com.pickdate.shared.domain.Email;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -82,7 +83,8 @@ class UserApi {
     ResponseEntity<UserData> create(@RequestBody CreateUserRequest request) {
         var user = new User(
                 Email.of(request.email()),
-                Password.fromPlaintext(request.password())
+                Password.fromPlaintext(request.password()),
+                DisplayName.ofNullable(request.displayName())
         );
 
         var created = userUseCase.createUser(user);

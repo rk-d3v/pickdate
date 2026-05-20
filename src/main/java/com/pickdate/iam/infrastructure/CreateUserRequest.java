@@ -1,19 +1,10 @@
 package com.pickdate.iam.infrastructure;
 
-
-import com.pickdate.iam.domain.Password;
-import com.pickdate.iam.domain.User;
-import com.pickdate.shared.domain.Email;
+import jakarta.annotation.Nullable;
 
 record CreateUserRequest(
         String email,
-        String password
+        String password,
+        @Nullable String displayName
 ) {
-
-    public User toUser() {
-        return new User(
-                Email.of(email),
-                Password.fromPlaintext(password)
-        );
-    }
 }

@@ -47,7 +47,8 @@ class UserApiIntegrationSpec extends Specification {
         given:
         def email = "newemail@email.com"
         def pass = "superSecretPassword!"
-        def request = new CreateUserRequest(email, pass)
+        def display = "Admin"
+        def request = new CreateUserRequest(email, pass, display)
 
         when:
         def responseEntity = userApi.create(request)
