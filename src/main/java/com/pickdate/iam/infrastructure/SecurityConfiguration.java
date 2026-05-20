@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -44,6 +45,7 @@ import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
@@ -67,7 +69,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @RequiredArgsConstructor
 class SecurityConfiguration {
 
-    private static final String[] ALLOW_LIST = {"/oauth2/token", "/userinfo"};
     private static final String[] SETUP_ENDPOINTS = {"/api/v1/iam/setup/**"};
 
     private final UserDetailsService userDetailsService;
@@ -83,7 +84,7 @@ class SecurityConfiguration {
                     authorizationServer.oidc(withDefaults());
                 })
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers(ALLOW_LIST).permitAll()
+                        .requestMatchers("/oauth2/token").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptions -> {
                     // returns 401
@@ -103,11 +104,16 @@ class SecurityConfiguration {
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) {
         http
                 .csrf(csrf -> csrf.ignoringRequestMatchers(SETUP_ENDPOINTS))
+                .addFilterBefore(
+                        new SetupRedirectFilter(applicationSetupUseCase),
+                        UsernamePasswordAuthenticationFilter.class
+                )
                 .authorizeHttpRequests((authorize) -> authorize
                         .dispatcherTypeMatchers(FORWARD, ERROR).permitAll()
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/static/**").permitAll()
                         .requestMatchers("/login").permitAll()
+                        .requestMatchers("/setup").permitAll()
                         .requestMatchers("/debug/**").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
@@ -132,7 +138,7 @@ class SecurityConfiguration {
                                 "/api/v1/observability/**"
                         ).hasAuthority("ADMIN")
                         .requestMatchers("/api/v1").permitAll()
-                        .requestMatchers("/api/v1/**").hasAuthority("USER")
+                        .requestMatchers("/api/v1/**").hasAnyAuthority("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 // return 401
@@ -144,6 +150,7 @@ class SecurityConfiguration {
                         .loginPage("/login")
                         .usernameParameter("email")
                         .passwordParameter("password")
+                        .defaultSuccessUrl("/", true)
                         .permitAll()
                         .authenticationDetailsSource(new RequestDetailsSource())
                         .failureHandler((request, response, exception) -> {
@@ -164,6 +171,7 @@ class SecurityConfiguration {
     }
 
     @Bean
+    @Profile("!local")
     CompromisedPasswordChecker compromisedPasswordChecker() {
         return new HaveIBeenPwnedRestApiPasswordChecker();
     }

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konfiguracja — Pickdate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-100 to-blue-50 flex items-center justify-center p-4">
+
+<div x-data="setupWizard()" class="w-full max-w-md">
+
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+
+        <!-- Header bar -->
+        <div class="h-1.5 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600"></div>
+
+        <div class="px-8 py-10">
+
+            <!-- Brand -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl mb-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-800">Pickdate</h1>
+                <p class="text-slate-500 text-sm mt-1">Pierwsza konfiguracja aplikacji</p>
+            </div>
+
+            <!-- Step indicators -->
+            <div class="flex items-center justify-center gap-2 mb-8">
+                <template x-for="i in 3" :key="i">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors duration-200"
+                             :class="step > i ? 'bg-blue-600 text-white' : step === i ? 'bg-blue-600 text-white ring-4 ring-blue-100' : 'bg-slate-200 text-slate-500'">
+                            <svg x-show="step > i" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span x-show="step <= i" x-text="i"></span>
+                        </div>
+                        <div x-show="i < 3" class="w-10 h-0.5 mx-1 transition-colors duration-200"
+                             :class="step > i ? 'bg-blue-600' : 'bg-slate-200'"></div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Error alert -->
+            <div x-show="error"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 class="mb-6 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clip-rule="evenodd"/>
+                </svg>
+                <p class="text-sm font-medium flex-1" x-text="error"></p>
+                <button type="button" @click="error = null"
+                        class="text-red-400 hover:text-red-600 transition-colors flex-shrink-0">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Step 1: Domain -->
+            <div x-show="step === 1" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+                <h2 class="text-lg font-semibold text-slate-800 mb-1">Domena aplikacji</h2>
+                <p class="text-sm text-slate-500 mb-6">Podaj publiczny adres, pod którym dostępna będzie aplikacja.</p>
+
+                <form @submit.prevent="setupDomain()" novalidate>
+                    <div class="mb-6">
+                        <label for="domain" class="block text-sm font-medium text-slate-700 mb-1.5">
+                            Adres domeny
+                        </label>
+                        <input
+                                type="text"
+                                id="domain"
+                                x-model="domain"
+                                required
+                                autocomplete="off"
+                                placeholder="np. pickdate.io lub localhost:8080"
+                                class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400
+                                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                       transition-shadow duration-150"
+                        />
+                    </div>
+
+                    <button
+                            type="submit"
+                            :disabled="loading || !domain.trim()"
+                            class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800
+                                   disabled:bg-blue-400 disabled:cursor-not-allowed
+                                   text-white font-semibold rounded-xl transition-colors duration-150
+                                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                                   flex items-center justify-center gap-2">
+                        <svg x-show="loading" x-cloak class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        <span x-text="loading ? 'Zapisywanie...' : 'Dalej'">Dalej</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 2: Admin -->
+            <div x-show="step === 2" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+                <h2 class="text-lg font-semibold text-slate-800 mb-1">Konto administratora</h2>
+                <p class="text-sm text-slate-500 mb-6">Utwórz konto głównego administratora aplikacji.</p>
+
+                <form @submit.prevent="setupAdmin()" novalidate>
+                    <div class="mb-5">
+                        <label for="email" class="block text-sm font-medium text-slate-700 mb-1.5">
+                            Adres email
+                        </label>
+                        <input
+                                type="email"
+                                id="email"
+                                x-model="email"
+                                required
+                                autocomplete="email"
+                                autofocus
+                                placeholder="admin@twojadomena.pl"
+                                class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400
+                                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                       transition-shadow duration-150"
+                        />
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="password" class="block text-sm font-medium text-slate-700 mb-1.5">
+                            Hasło
+                        </label>
+                        <div class="relative">
+                            <input
+                                    :type="showPassword ? 'text' : 'password'"
+                                    id="password"
+                                    x-model="password"
+                                    required
+                                    autocomplete="new-password"
+                                    placeholder="••••••••"
+                                    class="w-full px-4 py-2.5 pr-11 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400
+                                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                           transition-shadow duration-150"
+                            />
+                            <button
+                                    type="button"
+                                    @click="showPassword = !showPassword"
+                                    :aria-label="showPassword ? 'Ukryj hasło' : 'Pokaż hasło'"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600
+                                           focus:outline-none focus:text-slate-600 transition-colors">
+                                <svg x-show="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                                <svg x-show="showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button
+                            type="submit"
+                            :disabled="loading || !email.trim() || !password.trim()"
+                            class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800
+                                   disabled:bg-blue-400 disabled:cursor-not-allowed
+                                   text-white font-semibold rounded-xl transition-colors duration-150
+                                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                                   flex items-center justify-center gap-2">
+                        <svg x-show="loading" x-cloak class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        <span x-text="loading ? 'Tworzenie...' : 'Dalej'">Dalej</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 3: Complete -->
+            <div x-show="step === 3" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+                <h2 class="text-lg font-semibold text-slate-800 mb-1">Zakończ konfigurację</h2>
+                <p class="text-sm text-slate-500 mb-6">Zatwierdź ustawienia, aby uruchomić aplikację. Po potwierdzeniu endpointy konfiguracyjne zostaną zablokowane.</p>
+
+                <div class="bg-slate-50 rounded-xl border border-slate-200 divide-y divide-slate-200 mb-6">
+                    <div class="px-4 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-500">Domena</span>
+                        <span class="text-sm font-medium text-slate-800" x-text="domain"></span>
+                    </div>
+                    <div class="px-4 py-3 flex items-center justify-between">
+                        <span class="text-sm text-slate-500">Administrator</span>
+                        <span class="text-sm font-medium text-slate-800" x-text="email"></span>
+                    </div>
+                </div>
+
+                <button
+                        @click="completeSetup()"
+                        :disabled="loading"
+                        class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800
+                               disabled:bg-blue-400 disabled:cursor-not-allowed
+                               text-white font-semibold rounded-xl transition-colors duration-150
+                               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                               flex items-center justify-center gap-2">
+                    <svg x-show="loading" x-cloak class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <span x-text="loading ? 'Finalizowanie...' : 'Zakończ i przejdź do logowania'">Zakończ i przejdź do logowania</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-6">
+        &copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Pickdate
+    </p>
+</div>
+
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+
+<script>
+    function setupWizard() {
+        return {
+            step: 1,
+            loading: false,
+            error: null,
+            showPassword: false,
+            domain: '',
+            email: '',
+            password: '',
+
+            async setupDomain() {
+                this.loading = true;
+                this.error = null;
+                try {
+                    const res = await fetch('/api/v1/iam/setup/domain', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({domain: this.domain.trim()})
+                    });
+                    if (!res.ok) {
+                        const msg = await res.text().catch(() => null);
+                        throw new Error(msg || 'Błąd konfiguracji domeny. Sprawdź podany adres.');
+                    }
+                    this.step = 2;
+                } catch (e) {
+                    this.error = e.message;
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async setupAdmin() {
+                this.loading = true;
+                this.error = null;
+                try {
+                    const res = await fetch('/api/v1/iam/setup/admin', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({email: this.email.trim(), password: this.password})
+                    });
+                    if (!res.ok) {
+                        const msg = await res.text().catch(() => null);
+                        throw new Error(msg || 'Błąd tworzenia administratora. Sprawdź podane dane.');
+                    }
+                    this.step = 3;
+                } catch (e) {
+                    this.error = e.message;
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async completeSetup() {
+                this.loading = true;
+                this.error = null;
+                try {
+                    const res = await fetch('/api/v1/iam/setup', {method: 'POST'});
+                    if (!res.ok) {
+                        const msg = await res.text().catch(() => null);
+                        throw new Error(msg || 'Błąd finalizacji konfiguracji.');
+                    }
+                    window.location.href = '/login';
+                } catch (e) {
+                    this.error = e.message;
+                    this.loading = false;
+                }
+            }
+        };
+    }
+</script>
+
+</body>
+</html>
